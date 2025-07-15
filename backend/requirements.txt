@@ -5,3 +5,8 @@ requests
 streamlit
 pandas
 qrcode
+streamlit
+openai
+requests
+python-dotenv
+
