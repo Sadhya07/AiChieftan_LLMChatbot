@@ -36,3 +36,6 @@ AIChieftan/
 ├── .gitignore
 ├── requirements.txt
 └── README.md
+
+#Note
+Some of the code has been referenced from third party apps and is AI generated.
