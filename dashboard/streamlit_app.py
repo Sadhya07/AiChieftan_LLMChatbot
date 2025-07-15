@@ -4,7 +4,7 @@ import random
 
 st.set_page_config(page_title="Hotel Staff Dashboard", layout="wide")
 
-st.title("📊 Real-time Hotel Staff Dashboard")
+st.title("Real-time Hotel Staff Dashboard")
 
 # Sample guest requests
 sample_data = [
@@ -17,7 +17,7 @@ df = pd.DataFrame(sample_data)
 st.dataframe(df, use_container_width=True)
 
 # Sentiment Analysis Mockup
-st.subheader("📈 Guest Sentiment Summary")
+st.subheader("Guest Sentiment Summary")
 sentiment_data = {
     "Positive": random.randint(50, 70),
     "Neutral": random.randint(20, 30),

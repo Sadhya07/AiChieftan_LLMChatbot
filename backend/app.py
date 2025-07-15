@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from utils.chat import generate_response
+from chat import generate_response
 import json
 
 app = Flask(__name__)
