@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hotel Chatbot</title>
+</head>
+<body>
+    <h2>Welcome to AI Concierge</h2>
+    <div>
+        <input type="text" id="userInput" placeholder="Ask me anything..."/>
+        <button onclick="send()">Send</button>
+        <p id="responseBox"></p>
+    </div>
+
+    <script>
+        async function send() {
+            let message = document.getElementById("userInput").value;
+            let response = await fetch("/chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({message})
+            });
+            let data = await response.json();
+            document.getElementById("responseBox").innerText = data.response;
+        }
+    </script>
+</body>
+</html>
