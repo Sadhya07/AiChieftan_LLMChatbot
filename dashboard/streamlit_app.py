@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from datetime import datetime, timedelta
+
+
 import random
 
 # Set page config
@@ -329,6 +331,7 @@ elif dashboard_view == "Settings":
         st.checkbox("Desktop notifications", True)
         st.text_input("Notification Email")
         st.button("Update Notification Settings")
+
 
 # Footer
 st.markdown("---")
