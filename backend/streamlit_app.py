@@ -339,7 +339,7 @@ elif dashboard_view == "Chat Analytics":
             # Generate bot response (using your existing backend)
             try:
                 response = requests.post(
-                    "https://aichieftain-backend.onrender.com/chat",
+                    "https://aichieftain-hospitality.onrender.com",
                     json={"message": user_input},
                     timeout=10
                 )
