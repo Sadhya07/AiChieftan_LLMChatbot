@@ -1,20 +1,20 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from chat import generate_response
-import json
+from chat import get_ai_reply
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Allow requests from frontend or Streamlit
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    user_input = request.json.get("message")
-    response = generate_response(user_input)
-    return jsonify({"response": response})
+    data = request.get_json()
+    user_message = data.get("message", "")
 
-@app.route("/")
-def index():
-    return "Hospitality Chatbot API Running"
+    if not user_message:
+        return jsonify({"reply": "No input provided"}), 400
+
+    ai_response = get_ai_reply(user_message)
+    return jsonify({"reply": ai_response})
 
 if __name__ == "__main__":
     app.run(debug=True)

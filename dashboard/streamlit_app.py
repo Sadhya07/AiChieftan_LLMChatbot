@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from datetime import datetime, timedelta
+import requests
 
 
 import random
@@ -266,25 +267,98 @@ elif dashboard_view == "Chat Analytics":
     
     col1, col2 = st.columns([1, 1])
     with col1:
-        st.subheader("Live Chat Preview")
+        st.subheader("Live Chat")
+        
+        # Initialize chat history if not exists
+        if "chat_history" not in st.session_state:
+            st.session_state.chat_history = [
+                {"sender": "bot", "text": "Hello! I'm your AI Concierge. How can I assist you today?", "time": datetime.now().strftime("%I:%M %p")}
+            ]
+        
+        # Display chat container with custom styling
+        st.markdown("""
+        <style>
+        .chat-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            padding: 10px 15px;
+            border-radius: 18px 18px 0 18px;
+            margin: 8px 0;
+            max-width: 80%;
+            float: right;
+            clear: both;
+        }
+        .bot-message {
+            background-color: #f1f1f1;
+            padding: 10px 15px;
+            border-radius: 18px 18px 18px 0;
+            margin: 8px 0;
+            max-width: 80%;
+            float: left;
+            clear: both;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Chat container
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-        for msg in chat_messages:
-            if msg['sender'] == 'bot':
-                st.markdown(f'<div class="bot-message"><b>AI Concierge</b> ({msg["time"]})<br>{msg["text"]}</div>', 
-                           unsafe_allow_html=True)
+        for msg in st.session_state.chat_history:
+            if msg["sender"] == "bot":
+                st.markdown(
+                    f'<div class="bot-message"><b>AI Concierge</b> ({msg["time"]})<br>{msg["text"]}</div>', 
+                    unsafe_allow_html=True
+                )
             else:
-                st.markdown(f'<div class="user-message"><b>Guest</b> ({msg["time"]})<br>{msg["text"]}</div>', 
-                           unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="user-message"><b>Guest</b> ({msg["time"]})<br>{msg["text"]}</div>', 
+                    unsafe_allow_html=True
+                )
         st.markdown('</div>', unsafe_allow_html=True)
         
-        new_message = st.text_input("Type a message...")
-        if st.button("Send"):
-            if new_message:
-                chat_messages.append({"sender": "user", "text": new_message, "time": datetime.now().strftime("%I:%M %p")})
-                chat_messages.append({"sender": "bot", "text": "Thank you for your message. Our staff will respond shortly.", "time": datetime.now().strftime("%I:%M %p")})
-                st.experimental_rerun()
-    
+        # Chat input form
+        with st.form("chat_input", clear_on_submit=True):
+            user_input = st.text_input("Type a message...", key="input")
+            send_button = st.form_submit_button("Send")
+        
+        if send_button and user_input:
+            # Add user message to history
+            st.session_state.chat_history.append({
+                "sender": "user", 
+                "text": user_input, 
+                "time": datetime.now().strftime("%I:%M %p")
+            })
+            
+            # Generate bot response (using your existing backend)
+            try:
+                response = requests.post(
+                    "https://aichieftain-backend.onrender.com/chat",
+                    json={"message": user_input},
+                    timeout=10
+                )
+                reply = response.json().get("reply", "Sorry, I'm having trouble responding.")
+            except Exception as e:
+                reply = f"Error: {str(e)}"
+            
+            # Add bot response to history
+            st.session_state.chat_history.append({
+                "sender": "bot", 
+                "text": reply, 
+                "time": datetime.now().strftime("%I:%M %p")
+            })
+            
+            # Rerun to update the display
+            st.rerun()
+
     with col2:
+        # Keep all your existing analytics widgets
         st.subheader("Chatbot Metrics")
         col1, col2 = st.columns(2)
         with col1:
