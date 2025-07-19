@@ -309,53 +309,59 @@ elif dashboard_view == "Chat Analytics":
         """, unsafe_allow_html=True)
         
         # Chat container
-        st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-        for msg in st.session_state.chat_history:
-            if msg["sender"] == "bot":
-                st.markdown(
-                    f'<div class="bot-message"><b>AI Concierge</b> ({msg["time"]})<br>{msg["text"]}</div>', 
-                    unsafe_allow_html=True
-                )
-            else:
-                st.markdown(
-                    f'<div class="user-message"><b>Guest</b> ({msg["time"]})<br>{msg["text"]}</div>', 
-                    unsafe_allow_html=True
-                )
-        st.markdown('</div>', unsafe_allow_html=True)
+        with st.container():
+            for msg in st.session_state.chat_history:
+                if msg["sender"] == "bot":
+                    st.markdown(
+                        f'<div class="bot-message"><b>AI Concierge</b> ({msg["time"]})<br>{msg["text"]}</div>', 
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.markdown(
+                        f'<div class="user-message"><b>Guest</b> ({msg["time"]})<br>{msg["text"]}</div>', 
+                        unsafe_allow_html=True
+                    )
         
         # Chat input form
         with st.form("chat_input", clear_on_submit=True):
             user_input = st.text_input("Type a message...", key="input")
             send_button = st.form_submit_button("Send")
         
-        if send_button and user_input:
-            # Add user message to history
-            st.session_state.chat_history.append({
-                "sender": "user", 
-                "text": user_input, 
-                "time": datetime.now().strftime("%I:%M %p")
-            })
-            
-            # Generate bot response (using your existing backend)
-            try:
-                response = requests.post(
-                    "https://aichieftain-hospitality.onrender.com",
-                    json={"message": user_input},
-                    timeout=10
-                )
-                reply = response.json().get("reply", "Sorry, I'm having trouble responding.")
-            except Exception as e:
-                reply = f"Error: {str(e)}"
-            
-            # Add bot response to history
-            st.session_state.chat_history.append({
-                "sender": "bot", 
-                "text": reply, 
-                "time": datetime.now().strftime("%I:%M %p")
-            })
-            
-            # Rerun to update the display
-            st.rerun()
+if send_button and user_input:
+    # Add user message to history
+    st.session_state.chat_history.append({
+        "sender": "user", 
+        "text": user_input, 
+        "time": datetime.now().strftime("%I:%M %p")
+    })
+    
+    with st.spinner("AI Concierge is typing..."):
+        try:
+            response = requests.post(
+                "https://aichieftan-hospitality.onrender.com/chat",
+                json={"message": user_input},
+                timeout=10
+            )
+            if response.status_code == 200:
+                try:
+                    reply = response.json().get("reply", "Sorry, no reply returned.")
+                except ValueError:
+                    reply = "Error: Received invalid response."
+            else:
+                reply = f"Error: Server returned {response.status_code}"
+        except Exception as e:
+            reply = f"Error: {str(e)}"
+
+    
+    # Add bot response to history
+    st.session_state.chat_history.append({
+        "sender": "bot", 
+        "text": reply, 
+        "time": datetime.now().strftime("%I:%M %p")
+    })
+    
+    # Rerun to update the display
+    st.rerun()
 
     with col2:
         # Keep all your existing analytics widgets
