@@ -1,6 +1,7 @@
 import os
 import requests
 from dotenv import load_dotenv
+from groq import Groq
 
 load_dotenv()
 
@@ -65,3 +66,11 @@ if prompt := st.chat_input("How can I help you today?"):
         st.markdown(response)
     
     st.session_state.messages.append({"role": "assistant", "content": response})
+    
+    
+    
+    
+
+
+    
+    
