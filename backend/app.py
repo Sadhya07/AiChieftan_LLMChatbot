@@ -2,8 +2,11 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from chat import get_ai_reply
 
+
+
 app = Flask(__name__)
-CORS(app)  # Allow requests from frontend or Streamlit
+CORS(app, origins=["https://aichieftan-hospitality.onrender.com"])
+
 
 @app.route("/chat", methods=["POST"])
 def chat():
