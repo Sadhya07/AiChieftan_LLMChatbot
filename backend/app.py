@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from chat import get_ai_reply
+from chat import generate_response as get_ai_reply
 
 
 

@@ -4,8 +4,6 @@ import numpy as np
 import plotly.express as px
 from datetime import datetime, timedelta
 import requests
-
-
 import random
 
 # Set page config
@@ -29,9 +27,6 @@ st.markdown("""
         background-image: linear-gradient(to bottom, #1a3a8f, #0d1b3a);
         color: white;
     }
-    .css-1d391kg {
-        padding-top: 3.5rem;
-    }
     .header {
         color: #1a3a8f;
         font-weight: 700;
@@ -48,24 +43,25 @@ st.markdown("""
         border-radius: 10px;
         padding: 15px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        height: 400px;
+        height: 500px;
         overflow-y: auto;
+        margin-bottom: 15px;
     }
     .user-message {
         background-color: #e3f2fd;
-        padding: 8px 12px;
-        border-radius: 18px;
-        margin: 5px 0;
-        max-width: 70%;
+        padding: 10px 15px;
+        border-radius: 18px 18px 0 18px;
+        margin: 8px 0;
+        max-width: 80%;
         float: right;
         clear: both;
     }
     .bot-message {
         background-color: #f1f1f1;
-        padding: 8px 12px;
-        border-radius: 18px;
-        margin: 5px 0;
-        max-width: 70%;
+        padding: 10px 15px;
+        border-radius: 18px 18px 18px 0;
+        margin: 8px 0;
+        max-width: 80%;
         float: left;
         clear: both;
     }
@@ -73,10 +69,14 @@ st.markdown("""
         color: #d32f2f;
         font-weight: bold;
     }
+    .stRadio > div {
+        flex-direction: row !important;
+        gap: 15px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# Generate sample data
+# Sample data generation functions
 def generate_booking_data():
     room_types = ['Deluxe', 'Suite', 'Standard', 'Executive', 'Presidential']
     statuses = ['Confirmed', 'Cancelled', 'No-show', 'Checked-in', 'Checked-out']
@@ -117,20 +117,6 @@ def generate_service_requests():
         })
     return pd.DataFrame(data)
 
-def generate_chat_messages():
-    messages = [
-        {"sender": "bot", "text": "Hello! How can I assist you today?", "time": "10:00 AM"},
-        {"sender": "user", "text": "I'd like to order breakfast to my room", "time": "10:02 AM"},
-        {"sender": "bot", "text": "Certainly! Our breakfast menu includes Continental, American, and Vegan options. What would you prefer?", "time": "10:02 AM"},
-        {"sender": "user", "text": "American breakfast please", "time": "10:03 AM"},
-        {"sender": "bot", "text": "Great choice! Would you like coffee, tea, or juice with that?", "time": "10:03 AM"},
-        {"sender": "user", "text": "Coffee, black", "time": "10:04 AM"},
-        {"sender": "bot", "text": "Your American breakfast with black coffee will be delivered to room 305 in 20 minutes. Is there anything else I can help with?", "time": "10:04 AM"},
-        {"sender": "user", "text": "No, that's all. Thank you!", "time": "10:05 AM"},
-        {"sender": "bot", "text": "You're welcome! Enjoy your meal. You can contact me anytime if you need assistance.", "time": "10:05 AM"}
-    ]
-    return messages
-
 def generate_sentiment_data():
     dates = pd.date_range(end=datetime.today(), periods=30).tolist()
     data = []
@@ -146,8 +132,13 @@ def generate_sentiment_data():
 # Load sample data
 bookings_df = generate_booking_data()
 requests_df = generate_service_requests()
-chat_messages = generate_chat_messages()
 sentiment_df = generate_sentiment_data()
+
+# Initialize chat history
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [
+        {"sender": "bot", "text": "Hello! I'm your AI Concierge. How can I assist you today?", "time": datetime.now().strftime("%I:%M %p")}
+    ]
 
 # Sidebar - Filters and navigation
 with st.sidebar:
@@ -155,7 +146,8 @@ with st.sidebar:
     st.title("Hotel Concierge Dashboard")
     
     st.subheader("Navigation")
-    dashboard_view = st.radio("", ["Overview", "Bookings", "Service Requests", "Chat Analytics", "Settings"])
+    dashboard_view = st.radio("Select View", ["Overview", "Bookings", "Service Requests", "Chat Analytics", "Settings"], 
+                            label_visibility="collapsed")
     
     st.subheader("Filters")
     date_range = st.date_input("Date Range", [datetime.now() - timedelta(days=7), datetime.now()])
@@ -164,7 +156,7 @@ with st.sidebar:
     
     st.subheader("Quick Actions")
     if st.button("Refresh Data"):
-        st.experimental_rerun()
+        st.rerun()
     if st.button("Generate Report"):
         st.success("Report generated successfully!")
     
@@ -221,7 +213,7 @@ elif dashboard_view == "Bookings":
     
     col1, col2 = st.columns([3, 1])
     with col1:
-        st.dataframe(bookings_df, use_container_width=True)
+        st.dataframe(bookings_df, use_container_width=True, height=700)
     with col2:
         st.subheader("Quick Actions")
         if st.button("Check-in Selected"):
@@ -248,7 +240,7 @@ elif dashboard_view == "Service Requests":
             return f'color: {color}; font-weight: bold' if val in ['Urgent', 'High'] else ''
         
         styled_df = requests_df.style.applymap(color_priority, subset=['Priority'])
-        st.dataframe(styled_df, use_container_width=True)
+        st.dataframe(styled_df, use_container_width=True, height=700)
     
     with col2:
         st.subheader("Quick Actions")
@@ -267,157 +259,121 @@ elif dashboard_view == "Chat Analytics":
     
     col1, col2 = st.columns([1, 1])
     with col1:
-        st.subheader("Live Chat")
+        st.subheader("Live Chat Interface")
         
-        # Initialize chat history if not exists
-        if "chat_history" not in st.session_state:
-            st.session_state.chat_history = [
-                {"sender": "bot", "text": "Hello! I'm your AI Concierge. How can I assist you today?", "time": datetime.now().strftime("%I:%M %p")}
-            ]
+        chat_container = st.container(height=500)
         
-        # Display chat container with custom styling
-        st.markdown("""
-        <style>
-        .chat-container {
-            background-color: white;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            height: 400px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-        }
-        .user-message {
-            background-color: #e3f2fd;
-            padding: 10px 15px;
-            border-radius: 18px 18px 0 18px;
-            margin: 8px 0;
-            max-width: 80%;
-            float: right;
-            clear: both;
-        }
-        .bot-message {
-            background-color: #f1f1f1;
-            padding: 10px 15px;
-            border-radius: 18px 18px 18px 0;
-            margin: 8px 0;
-            max-width: 80%;
-            float: left;
-            clear: both;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
-        # Chat container
-        with st.container():
-            for msg in st.session_state.chat_history:
+        # Display messages
+        for msg in st.session_state.chat_history:
+            with chat_container:
                 if msg["sender"] == "bot":
-                    st.markdown(
-                        f'<div class="bot-message"><b>AI Concierge</b> ({msg["time"]})<br>{msg["text"]}</div>', 
-                        unsafe_allow_html=True
-                    )
+                    st.chat_message("assistant").write(f"{msg['text']}")
                 else:
-                    st.markdown(
-                        f'<div class="user-message"><b>Guest</b> ({msg["time"]})<br>{msg["text"]}</div>', 
-                        unsafe_allow_html=True
-                    )
+                    st.chat_message("user").write(f"{msg['text']}")
         
-        # Chat input form
-        with st.form("chat_input", clear_on_submit=True):
-            user_input = st.text_input("Type a message...", key="input")
-            send_button = st.form_submit_button("Send")
-        
-if send_button and user_input:
-    # Add user message to history
-    st.session_state.chat_history.append({
-        "sender": "user", 
-        "text": user_input, 
-        "time": datetime.now().strftime("%I:%M %p")
-    })
+        # Input
+        if prompt := st.chat_input("How can I help you today?"):
+            st.session_state.chat_history.append({
+                "sender": "user",
+                "text": prompt,
+                "time": datetime.now().strftime("%I:%M %p")
+            })
+            
+            # Get AI response
+            try:
+                response = requests.post(
+                    "http://localhost:5000/chat",
+                    json={"message": prompt}
+                )
+                reply = response.json().get("reply", "I didn't understand that")
+            except Exception as e:
+                reply = f"Error: {str(e)}"
+            
+            st.session_state.chat_history.append({
+                "sender": "bot",
+                "text": reply,
+                "time": datetime.now().strftime("%I:%M %p")
+            })
+            st.rerun()
     
-    with st.spinner("AI Concierge is typing..."):
-        try:
-            response = requests.post(
-                "https://aichieftan-hospitality.onrender.com/chat",
-                json={"message": user_input},
-                timeout=10
-            )
-            if response.status_code == 200:
-                try:
-                    reply = response.json().get("reply", "Sorry, no reply returned.")
-                except ValueError:
-                    reply = "Error: Received invalid response."
-            else:
-                reply = f"Error: Server returned {response.status_code}"
-        except Exception as e:
-            reply = f"Error: {str(e)}"
-
-    
-    # Add bot response to history
-    st.session_state.chat_history.append({
-        "sender": "bot", 
-        "text": reply, 
-        "time": datetime.now().strftime("%I:%M %p")
-    })
-    
-    # Rerun to update the display
-    st.rerun()
-
     with col2:
-        # Keep all your existing analytics widgets
-        st.subheader("Chatbot Metrics")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Total Chats Today", "48")
-            st.metric("Automation Rate", "82%")
-        with col2:
-            st.metric("Avg Response Time", "12s")
-            st.metric("User Satisfaction", "4.7/5")
+        st.metric("Total Conversations", "128")
+        st.metric("Response Accuracy", "92%")
         
-        st.subheader("Common Questions")
-        common_questions = {
-            "Room service menu": 23,
-            "Check-out time": 18,
-            "WiFi password": 15,
-            "Local attractions": 12,
-            "Booking modification": 9
+        st.subheader("Common Topics")
+        st.write("- Room Service\n- Check-in/out\n- Amenities\n- Local Recommendations\n- Billing")
+
+        
+        st.subheader("Chatbot Performance")
+        
+        # Metrics columns
+        m1, m2 = st.columns(2)
+        with m1:
+            st.metric("Total Conversations", "128")
+            st.metric("Response Accuracy", "92%")
+        with m2:
+            st.metric("Avg Response Time", "1.4s")
+            st.metric("User Satisfaction", "4.8/5")
+        
+        st.subheader("Conversation Topics")
+        topics = {
+            "Room Service": 28,
+            "Check-in/out": 22,
+            "Amenities": 18,
+            "Local Recommendations": 15,
+            "Billing": 12
         }
-        st.table(pd.DataFrame.from_dict(common_questions, orient='index', columns=['Count']).sort_values('Count', ascending=False))
+        st.dataframe(
+            pd.DataFrame.from_dict(topics, orient='index', columns=['Count'])
+            .sort_values('Count', ascending=False),
+            use_container_width=True
+        )
         
         st.subheader("Sentiment Analysis")
-        fig = px.pie(values=[75, 15, 10], names=['Positive', 'Neutral', 'Negative'], 
-                    title="Chat Sentiment Distribution")
+        sentiment_data = pd.DataFrame({
+            'Sentiment': ['Positive', 'Neutral', 'Negative'],
+            'Percentage': [78, 15, 7]
+        })
+        fig = px.pie(sentiment_data, values='Percentage', names='Sentiment',
+                    title="Customer Sentiment Distribution")
         st.plotly_chart(fig, use_container_width=True)
 
 elif dashboard_view == "Settings":
     st.title("⚙️ Settings")
     st.markdown("Configure your dashboard and chatbot settings")
     
-    with st.expander("Dashboard Preferences"):
+    tab1, tab2, tab3 = st.tabs(["Dashboard", "Chatbot", "Notifications"])
+    
+    with tab1:
+        st.subheader("Dashboard Preferences")
         theme = st.selectbox("Color Theme", ["Light", "Dark", "Blue"])
         density = st.selectbox("Data Density", ["Compact", "Normal", "Detailed"])
-        st.button("Save Preferences")
+        st.button("Save Dashboard Settings")
     
-    with st.expander("Chatbot Configuration"):
-        st.checkbox("Enable voice responses", True)
-        st.checkbox("Enable multilingual support", False)
-        st.checkbox("Show typing indicators", True)
-        st.slider("Response delay (seconds)", 0.0, 3.0, 0.5, 0.1)
+    with tab2:
+        st.subheader("Chatbot Configuration")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.checkbox("Enable voice responses", True)
+            st.checkbox("Show typing indicators", True)
+        with col2:
+            st.checkbox("Multilingual support", False)
+            st.slider("Response delay (s)", 0.0, 3.0, 0.5, 0.1)
         st.button("Update Chatbot Settings")
     
-    with st.expander("Notification Settings"):
+    with tab3:
+        st.subheader("Notification Settings")
         st.checkbox("Email alerts for urgent requests", True)
-        st.checkbox("SMS alerts for VIP guests", True)
+        st.checkbox("SMS alerts for VIP guests", False)
         st.checkbox("Desktop notifications", True)
-        st.text_input("Notification Email")
-        st.button("Update Notification Settings")
-
+        st.text_input("Notification Email Address")
+        st.button("Save Notification Settings")
 
 # Footer
 st.markdown("---")
 st.markdown("""
     <div style="text-align: center; color: #666; font-size: 0.9em;">
     <p>AIChieftain Hospitality Dashboard v1.0 • Powered by Streamlit</p>
-    <p>Data updates every 30 seconds • Last updated: {}</p>
+    <p>Last updated: {}</p>
     </div>
     """.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), unsafe_allow_html=True)

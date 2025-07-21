@@ -46,28 +46,7 @@ def generate_response(message):
     except Exception as e:
         return f"Sorry, I encountered an error: {str(e)}"
 
-# Streamlit UI
-st.title("Hotel Concierge Chat")
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-if prompt := st.chat_input("How can I help you today?"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    
-    with st.chat_message("assistant"):
-        response = generate_response(prompt)
-        st.markdown(response)
-    
-    st.session_state.messages.append({"role": "assistant", "content": response})
-    
-    
     
     
 
