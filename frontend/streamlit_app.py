@@ -281,7 +281,7 @@ elif dashboard_view == "Chat Analytics":
             
             # Get AI response
             try:
-                API_URL = "https://aichieftan-hospitality.onrender.com/chat"
+                API_URL = "https://aichieftan-llmchatbot-backend.onrender.com/chat"
                 response = requests.post(
                     API_URL,
                     json={"message": prompt}
