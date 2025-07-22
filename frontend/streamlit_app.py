@@ -9,7 +9,7 @@ import random
 # Set page config
 st.set_page_config(
     page_title="AIChieftain - Hotel Concierge Dashboard",
-    page_icon="🏨",
+    page_icon="assets/icon.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -282,7 +282,7 @@ elif dashboard_view == "Chat Analytics":
             # Get AI response
             try:
                 response = requests.post(
-                    "http://localhost:5000/chat",
+                    API_URL = "https://aichieftan-hospitality.onrender.com/chat",
                     json={"message": prompt}
                 )
                 reply = response.json().get("reply", "I didn't understand that")
@@ -295,26 +295,7 @@ elif dashboard_view == "Chat Analytics":
                 "time": datetime.now().strftime("%I:%M %p")
             })
             st.rerun()
-    
-    with col2:
-        st.metric("Total Conversations", "128")
-        st.metric("Response Accuracy", "92%")
-        
-        st.subheader("Common Topics")
-        st.write("- Room Service\n- Check-in/out\n- Amenities\n- Local Recommendations\n- Billing")
-
-        
-        st.subheader("Chatbot Performance")
-        
-        # Metrics columns
-        m1, m2 = st.columns(2)
-        with m1:
-            st.metric("Total Conversations", "128")
-            st.metric("Response Accuracy", "92%")
-        with m2:
-            st.metric("Avg Response Time", "1.4s")
-            st.metric("User Satisfaction", "4.8/5")
-        
+            
         st.subheader("Conversation Topics")
         topics = {
             "Room Service": 28,
@@ -328,6 +309,26 @@ elif dashboard_view == "Chat Analytics":
             .sort_values('Count', ascending=False),
             use_container_width=True
         )
+    
+    with col2:
+        st.metric("Total Conversations", "128")
+        st.metric("Response Accuracy", "92%")
+        
+        
+
+        
+        st.subheader("Chatbot Performance")
+        
+        # Metrics columns
+        m1, m2 = st.columns(2)
+        with m1:
+            st.metric("Total Conversations", "128")
+            st.metric("Response Accuracy", "92%")
+        with m2:
+            st.metric("Avg Response Time", "1.4s")
+            st.metric("User Satisfaction", "4.8/5")
+        
+
         
         st.subheader("Sentiment Analysis")
         sentiment_data = pd.DataFrame({
