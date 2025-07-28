@@ -142,7 +142,7 @@ if "chat_history" not in st.session_state:
 
 # Sidebar - Filters and navigation
 with st.sidebar:
-    st.image("../assets/concierge.png", width=150)
+    
 
     st.title("Hotel Concierge Dashboard")
     
